@@ -14,7 +14,9 @@ from PIL import Image
 from io import BytesIO
 
 TOKEN = 'pk.eyJ1IjoicmF2ZW5leWVzIiwiYSI6IkpaNkhwLUkifQ.Rjz1PT66ZZhJYwMljuzQQw'
-TILES_DIR = '/Users/caa0107/Documents/projects/SABI/src/foreshadow/mapstr/app/static/map_tiles/tiles'
+TILES_NAME = "mapbox-tiles"
+TILES_DIR = '/Users/gsa0081/Projects/tile-server/app/static/map_tiles/'
+TILES_URL = 'https://api.mapbox.com/v4/mapbox.streets/{}/{}/{}.png?access_token=pk.eyJ1IjoicmF2ZW5leWVzIiwiYSI6IkpaNkhwLUkifQ.Rjz1PT66ZZhJYwMljuzQQw'
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -24,52 +26,8 @@ def deg2num(lat_deg, lon_deg, zoom):
     return xtile, ytile
 
 # zooms = [5, 6, 7, 8, 9, 10, 11, 12, 13]
-zooms = [1, 2, 3, 4]
-# zooms = [13, 14]
-
-# # Bounding boxes expressed as [min_lon, max_lon, min_lat, max_lat]
-# bbox_phnom_penh = [103.6, 106.2, 10.7, 12.4]
-# bbox_djibouti = [41.5, 43.6, 10.9, 12.6]
-#
-# BOUNDING_BOXES = {
-#     'phnom_penh': bbox_phnom_penh,
-#     'djibouti': bbox_djibouti
-# }
-#
-# def get_tile_sets(bbox, min_zoom, max_zoom):
-#
-#     min_lon = bbox[0]
-#     max_lon = bbox[1]
-#     min_lat = bbox[2]
-#     max_lat = bbox[3]
-#
-#     tiles = []
-#     for zoom in range(min_zoom, max_zoom + 1):
-#         print('Building tile requests for zoom {}'.format(zoom))
-#         lons = np.arange(min_lon, max_lon, .33 * 360 / (2 ** zoom))
-#         lats = np.arange(min_lat, max_lat, .33 * 170 / (2 ** zoom))
-#
-#         tile_set = set()
-#         for lat in lats:
-#             for lon in lons:
-#                 tile_set.add(deg2num(lat, lon, zoom))
-#
-#         tiles.append(tile_set)
-#
-#     return tiles
-#
-#
-#
-# def get_tiles(roi, min_zoom, max_zoom):
-#     bbox = BOUNDING_BOXES[roi]
-#
-#     tile_sets = get_tile_sets(bbox, min_zoom, max_zoom)
-#
-#     for tile_set in tile_sets:
-#         for tile in tile_set:
-#             out_file = os.path.join('tiles_phnom_penh', 'mapbox-tiles-{}-{}-{}.png'.format(zoom, tile[0], tile[1]))
-#             url = 'https://api.mapbox.com/v4/mapbox.streets/{}/{}/{}.png?access_token={}'.format(
-#                 zoom, tile[0], tile[1], TOKEN)
+#zooms = [1, 2, 3, 4]
+zooms = [13, 14, 15, 16]
 
 
 if True:
@@ -99,10 +57,16 @@ if True:
     # min_lon = 104
     # max_lon = 106
 
-    min_lat = -85
-    max_lat = 85
-    min_lon = -180
-    max_lon = 180
+    #min_lat = -85
+    #max_lat = 85
+    #min_lon = -180
+    #max_lon = 180
+    
+    # Nairobi
+    max_lat = -1.1655
+    min_lat = -1.4222
+    min_lon = 36.6906
+    max_lon = 36.9240
 
     # Djibouti
     # min_lat = 10.9
@@ -129,19 +93,25 @@ if True:
 
 if True:
     if not os.path.isdir(TILES_DIR):
-        os.mkdir(TILES_DIR)
+        exit("Tiles Dir Must Exist")
+    
+    if not os.path.isdir(os.path.join(TILES_DIR, TILES_NAME)):
+        os.mkdir(os.path.join(TILES_DIR,TILES_NAME))
 
     for zoom in zooms:
         tileSet = tiles[zooms.index(zoom)]
         for i, tile in enumerate(tileSet):
-            url = 'https://api.mapbox.com/v4/mapbox.streets/{}/{}/{}.png?access_token={}'.format(
-                zoom, tile[0], tile[1], TOKEN)
+            url = TILES_URL.format(
+                zoom, tile[0], tile[1])
+            
+            if not os.path.isdir(os.path.join(TILES_DIR, TILES_NAME, zoom)):
+                os.makedirs(os.path.join(TILES_DIR, TILES_NAME, zoom))
+            
+            out_file = os.path.join(TILES_DIR,TILES_NAME, zoom, '{}-{}-{}-{}.png'.format(TILES_NAME,zoom, tile[0], tile[1]))
 
-            out_file = os.path.join(TILES_DIR, 'mapbox-tiles-{}-{}-{}.png'.format(zoom, tile[0], tile[1]))
-
-            # if os.path.isfile(out_file):
-            #     print("Skipping {}".format(out_file))
-            #     continue
+            if os.path.isfile(out_file):
+                print("Skipping {}".format(out_file))
+                continue
 
             # time.sleep(.01*np.abs(np.random.randn(1))[0])
             print('{} ({}/{})'.format(out_file, i + 1, len(tileSet)))
@@ -149,24 +119,3 @@ if True:
             img = Image.open(BytesIO(response.content))
             img.save(out_file)
             # testfile.retrieve(url, out_file)
-
-
-# if False:
-#     filesPath = '/Users/scott.philips/Documents/SABI/STROfflineDemo/static/tiles'
-#     files = [f for f in os.listdir(filesPath) if '.png' in f]
-#
-#     for f in files:
-#         fsplit = f.split('-')
-#         zoom = fsplit[2]
-#         x = fsplit[3]
-#         y = fsplit[4].split('.')[0]
-#
-#         testfile = urllib.URLopener()
-#         url =  'https://b.tiles.mapbox.com/v3/examples.map-cnkhv76j/%s/%s/%s@2x.png'%(zoom,x,y)
-#         out_file = "mapbox-darktiles-%s-%s-%s.png"%(zoom,x,y)
-#         if os.path.isfile(out_file):
-#             print "Skipping"
-#             continue
-#         time.sleep(.5*np.abs(np.random.randn(1))[0])
-#         print out_file
-#         testfile.retrieve(url,out_file)
