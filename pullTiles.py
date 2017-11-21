@@ -14,9 +14,11 @@ from PIL import Image
 from io import BytesIO
 
 TOKEN = 'pk.eyJ1IjoicmF2ZW5leWVzIiwiYSI6IkpaNkhwLUkifQ.Rjz1PT66ZZhJYwMljuzQQw'
-TILES_NAME = "mapbox-tiles"
-TILES_DIR = '/Users/gsa0081/Projects/tile-server/app/static/map_tiles/'
-TILES_URL = 'https://api.mapbox.com/v4/mapbox.streets/{}/{}/{}.png?access_token=pk.eyJ1IjoicmF2ZW5leWVzIiwiYSI6IkpaNkhwLUkifQ.Rjz1PT66ZZhJYwMljuzQQw'
+TILES_NAME = "mapbox-light"
+#TILES_NAME = 'stamen-terrain'
+TILES_DIR = 'C:\Users\gsa0081\Documents\map_tiles'
+TILES_URL = 'https://api.mapbox.com/v4/mapbox.light/{}/{}/{}.png?access_token=pk.eyJ1IjoicmF2ZW5leWVzIiwiYSI6IkpaNkhwLUkifQ.Rjz1PT66ZZhJYwMljuzQQw'
+#TILES_URL = 'http://tile.stamen.com/terrain/{}/{}/{}.jpg'
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -25,12 +27,18 @@ def deg2num(lat_deg, lon_deg, zoom):
     ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
     return xtile, ytile
 
-# zooms = [5, 6, 7, 8, 9, 10, 11, 12, 13]
-#zooms = [1, 2, 3, 4]
-zooms = [13, 14, 15, 16]
+zooms = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+#zooms = [1, 2]
+#zooms = [13, 14, 15, 16]
 
 
 if True:
+    # World
+    #min_lat = -89
+    #max_lat = 89
+    #min_lon = -179
+    #max_lon = 179
+    
     # Phnom Penh
     # min_lat = 10.7
     # max_lat = 12.4
@@ -104,10 +112,10 @@ if True:
             url = TILES_URL.format(
                 zoom, tile[0], tile[1])
             
-            if not os.path.isdir(os.path.join(TILES_DIR, TILES_NAME, zoom)):
-                os.makedirs(os.path.join(TILES_DIR, TILES_NAME, zoom))
+            if not os.path.isdir(os.path.join(TILES_DIR, TILES_NAME, str(zoom))):
+                os.makedirs(os.path.join(TILES_DIR, TILES_NAME, str(zoom)))
             
-            out_file = os.path.join(TILES_DIR,TILES_NAME, zoom, '{}-{}-{}-{}.png'.format(TILES_NAME,zoom, tile[0], tile[1]))
+            out_file = os.path.join(TILES_DIR,TILES_NAME, str(zoom), '{}-{}-{}-{}.png'.format(TILES_NAME,zoom, tile[0], tile[1]))
 
             if os.path.isfile(out_file):
                 print("Skipping {}".format(out_file))
@@ -116,6 +124,9 @@ if True:
             # time.sleep(.01*np.abs(np.random.randn(1))[0])
             print('{} ({}/{})'.format(out_file, i + 1, len(tileSet)))
             response = requests.get(url)
+            if response.status_code == 404:
+                print('Could not find {} ({}/{})'.format(out_file, i + 1, len(tileSet)))
+                continue
             img = Image.open(BytesIO(response.content))
             img.save(out_file)
             # testfile.retrieve(url, out_file)
