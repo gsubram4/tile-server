@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Tile Server</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="/static/lib/leaflet/leaflet.css" rel="stylesheet">
+
+    <script src="/static/lib/leaflet/leaflet.js"></script>
+
+	
+</head>
+<body>
+
+
+
+<div id="mapid" style="width: 100%; height: 100%; position:absolute; top:0; left: 0;"></div>
+<script>
+
+	var mymap = L.map('mapid').setView([51.505, -0.09], 1);
+
+	var localMapTileSettings = {
+		url: 'tiles/mapbox-tiles-{z}-{x}-{y}.png',
+		startLatLng: [-1.28289, 36.81682],
+		startZoom: 14,
+		options: {
+		  attribution: '',
+		  maxZoom: 20
+		}
+	};
+	var localTiles = L.tileLayer(localMapTileSettings.url, localMapTileSettings.options);
+
+	var baseLayers = {'Local Map Tiles': localTiles};
+
+	L.tileLayer(localMapTileSettings.url, localMapTileSettings.options).addTo(mymap);
+
+</script>
+
+
+
+</body>
+</html>
